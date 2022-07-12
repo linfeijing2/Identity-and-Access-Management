@@ -17,9 +17,21 @@ CORS(app)
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this funciton will add one
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 # ROUTES
+
+def get_drinks_all(recipe):
+    drinks = Drink.query.order_by(Drink.id).all()
+    if recipe == "short":
+        all_drinks = [drink.short() for drink in drinks]
+    elif recipe == 'long':
+        all_drinks = [drink.long() for drink in drinks]
+    else:
+        return abort(404)
+    if len(all_drinks) == 0:
+        abort(404)
+    return all_drinks
 '''
 @TODO implement endpoint
     GET /drinks
@@ -28,7 +40,10 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks', methods=['GET'])
+@requires_auth('get:drinks')
+def get_drinks(token):
+    return jsonify({'success': True, 'drinks':get_drinks_all("short")})
 
 '''
 @TODO implement endpoint
@@ -38,6 +53,10 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(token):
+    return jsonify({'success': True, 'drinks':get_drinks_all("long")})
 
 
 '''
@@ -49,6 +68,16 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def post_drink(token):
+    body = request.get_json()
+    new_title = body.get('title', None)
+    new_recipe = body.get('recipe', None)
+    new_drink = Drink(title=new_title, recipe=json.dumps(body['recipe']))
+    new_drink.insert()
+    
+    return jsonify({'success': True, 'drinks': new_drink.long()})
 
 
 '''
@@ -62,6 +91,23 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<int:drink_id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def patch_drink(token, drink_id):
+    body = json.loads(request.data.decode('utf-8'))
+    if not body:
+        abort(404, message="body not found")
+    update_drink = Drink.query.filter(Drink.id ==drink_id).one_or_none()
+    if not update_drink:
+        abort(404, {'drink not found'})
+
+    update_drink.title = body['title']
+    update_drink.recipe = json.dumps(body['recipe'])
+    update_drink.update()
+
+    return jsonify({'success': True, 'drink': update_drink.long()})
+
+
 
 
 '''
@@ -74,8 +120,13 @@ CORS(app)
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-
-
+@app.route('/drinks/<int:drink_id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink(token,drink_id):
+    body = request.get_json()
+    delete_drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+    delete_drink.delete()
+    return jsonify({'success': True, 'delete': drink_id})
 # Error Handling
 '''
 Example error handling for unprocessable entity
@@ -101,6 +152,13 @@ def unprocessable(error):
                     }), 404
 
 '''
+@app.errorhandler(404)
+def unprocessable(error):
+    return jsonify({
+        "success": False,
+        "error": 404,
+        "message": "resource not found"
+    }), 404
 
 '''
 @TODO implement error handler for 404
@@ -112,3 +170,10 @@ def unprocessable(error):
 @TODO implement error handler for AuthError
     error handler should conform to general task above
 '''
+@app.errorhandler(AuthError)
+def authentification_failed(AuthError): 
+    return jsonify({
+            "success": False, 
+            "error": AuthError.status_code,
+            "message": (AuthError.error['description'], "authentification fails")
+            }), 401

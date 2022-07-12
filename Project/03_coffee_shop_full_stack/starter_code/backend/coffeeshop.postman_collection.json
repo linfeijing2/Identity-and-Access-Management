@@ -1,0 +1,18 @@
+{
+	"info": {
+		"_postman_id": "5d2ba55d-2b74-4be0-9985-e2981510f240",
+		"name": "coffeeshop",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21784079"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

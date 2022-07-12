@@ -2,25 +2,16 @@
 
 ## Full Stack Nano - IAM Final Project
 
-Udacity has decided to open a new digitally enabled cafe for students to order drinks, socialize, and study hard. But they need help setting up their menu experience.
+### How to run&test the project
+* `EXPORT FLASK_APP=api.py`, then `flask run --reload` will start the server
+* In Autho0, set up the Application and Api, remember to use the code flow format to get the token and test in postman with Authorization in Bearer token mode.
 
-You have been called on to demonstrate your newly learned skills to create a full stack drink menu application. The application must:
+### Auth0 Authorize Link
+The complete documentation for the authorization code flow can be found in [Auth0's Documentation](https://auth0.com/docs/api/authentication#authorize-application). It may help to fill in the url in the textbox below before copying it into your browser:
 
-1. Display graphics representing the ratios of ingredients in each drink.
-2. Allow public users to view drink names and graphics.
-3. Allow the shop baristas to see the recipe information.
-4. Allow the shop managers to create new drinks and edit existing drinks.
+`https://{{YOUR_DOMAIN}}/authorize?audience={{API_IDENTIFIER}}&response_type=token&client_id={{YOUR_CLIENT_ID}}&redirect_uri={{YOUR_CALLBACK_URI}}`
 
-## Tasks
 
-There are `@TODO` comments throughout the project. We recommend tackling the sections in order. Start by reading the READMEs in:
-
-1. [`./backend/`](./backend/README.md)
-2. [`./frontend/`](./frontend/README.md)
-
-## About the Stack
-
-We started the full stack application for you. It is designed with some key functional areas:
 
 ### Backend
 
